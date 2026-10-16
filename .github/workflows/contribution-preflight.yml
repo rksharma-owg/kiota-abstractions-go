@@ -35,7 +35,14 @@ jobs:
       - run: go test ./... -count=1 -json > result.out
       - run: go vet ./...
       - run: go test -coverprofile cover.out -coverpkg=./... ./...
-      - run: test -z "$(gofmt -l serialization/serialization_writer_proxy_factory.go tests/serialization_writer_proxy_factory_test.go)"
+      - name: Check formatting
+        run: |
+          gofmt -l serialization/serialization_writer_proxy_factory.go > formatting.out
+          if [ '${{ matrix.revision }}' = patch ]; then
+            gofmt -l tests/serialization_writer_proxy_factory_test.go >> formatting.out
+          fi
+          cat formatting.out
+          test ! -s formatting.out
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: test-${{ matrix.revision }}
